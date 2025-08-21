@@ -90,9 +90,8 @@ async function finalizarTurno(){
     const dadosChassi     = JSON.parse(localStorage.getItem('tabelaChassi') || '[]');
     const dadosComissao   = JSON.parse(localStorage.getItem('tabelaComissaoSeguro') || '[]');
     const dadosQualidade  = JSON.parse(localStorage.getItem('tabelaQualidade') || '[]');
-    const dadosCIEmail    = JSON.parse(localStorage.getItem('tabelaCIEmail') || '[]');
 
-    const semDados = (!dadosChassi?.length) && (!dadosComissao?.length) && (!dadosQualidade?.length) && (!dadosCIEmail?.length);
+    const semDados = (!dadosChassi?.length && !dadosComissao?.length && !dadosQualidade?.length);
     if (semDados) {
       showAppModal({ title:'Atenção', message:'Não há dados para exportar.', onOk: ()=>{ location.href='index.html'; } });
       return;
@@ -101,7 +100,7 @@ async function finalizarTurno(){
     showConfirmModal({
       title: 'Confirmação',
       message: 'Tem certeza que deseja exportar dados e sair?',
-      onYes: async () => { await exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade, dadosCIEmail); },
+      onYes: async () => { await exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade); },
       onNo: () => {}
     });
   } catch (e) {
@@ -110,7 +109,7 @@ async function finalizarTurno(){
   }
 }
 
-async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade, dadosCIEmail){
+async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade){
   if (!window.ExcelJS || !window.saveAs) {
     showAppModal({title:'Erro', message:'Bibliotecas ExcelJS/FileSaver não carregadas.'});
     return;
@@ -147,15 +146,7 @@ async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade,
     (dadosQualidade||[]).forEach(r => ws3.addRow(r));
 
     // CI / E-mail (COM Observação)
-    const ws4 = workbook.addWorksheet('CI / E-mail');
-    ws4.columns = [
-      { header:'Setor', key:'setor', width:18 },
-      { header:'Turno', key:'turno', width:12 },
-      { header:'Controlador de acesso', key:'controlador', width:24 },
-      { header:'Número de chassi', key:'chassi', width:22 },
-      { header:'Observação', key:'observacao', width:28 },
-      { header:'Data e Hora', key:'dataHora', width:22 }
-    ];
+    ;
     (dadosCIEmail||[]).forEach(r => ws4.addRow(r));
 
     const buffer = await workbook.xlsx.writeBuffer();
@@ -350,7 +341,7 @@ function finalizarTurno() {
 <!-- === FIM DO PATCH === -->
 
 <script>
-async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade, dadosCIEmail){
+async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade){
   if (!window.ExcelJS || !window.saveAs) {
     showAppModal && showAppModal({title:'Erro', message:'Bibliotecas ExcelJS/FileSaver não carregadas.'});
     return;
@@ -386,13 +377,13 @@ async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade,
     addSheet('Industrialização',   dadosChassi);
     addSheet('Comissão de Seguro', dadosComissao);
     addSheet('Qualidade',          dadosQualidade);
-    addSheet('CI - E-mail',        dadosCIEmail);
+    
 
     const tagged = [
       ...(dadosChassi||[]).map(r => ({origem:'Industrialização',   ...r})),
       ...(dadosComissao||[]).map(r => ({origem:'Comissão de Seguro', ...r})),
       ...(dadosQualidade||[]).map(r => ({origem:'Qualidade',        ...r})),
-      ...(dadosCIEmail||[]).map(r => ({origem:'CI - E-mail',        ...r})),
+      ),
     ];
     if (tagged.length > 0) {
       const preferred = ['origem','setor','turno','controlador','chassi','observacao','dataHora'];
@@ -424,37 +415,26 @@ async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade,
 </script>
 
 
-
-
 <script>
 function trocarUsuario(){
   if (typeof showConfirmModal === 'function'){
     showConfirmModal({
       title: 'Trocar usuário',
-      message: `Deseja trocar de usuário sem finalizar o turno?
-
-Se escolher "Sim", os dados atuais serão mantidos.`,
+      message: `Deseja trocar de usuário sem finalizar o turno?\n\nSe escolher "Sim", os dados atuais serão mantidos.`,
       onYes: function(){ location.href = 'index.html'; },
       onNo: function(){
         if (typeof showAppModal === 'function'){
           showAppModal({title:'Operação cancelada', message:'Dados preservados. Permanecendo no menu.'});
-        } else {
-          alert('Operação cancelada, dados preservados.');
-        }
+        } else { alert('Operação cancelada, dados preservados.'); }
       }
     });
   } else {
     var manter = confirm('Deseja trocar de usuário mantendo os dados atuais?');
-    if (manter){
-      location.href = 'index.html';
-    } else {
-      alert('Operação cancelada, dados preservados.');
-    }
+    if (manter){ location.href = 'index.html'; }
+    else { alert('Operação cancelada, dados preservados.'); }
   }
 }
 </script>
-
-
 
 </body>
 </html>

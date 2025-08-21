@@ -34,7 +34,7 @@
 <button class="botao" onclick="location.href='controle_p7_industrializacao.html'">Veículos - Industrialização</button>
 <button class="botao" onclick="location.href='controle_p7_comissao_seguro.html'">Veículos - Comissão Seguro</button>
 <button class="botao" onclick="location.href='controle_p7_qualidade.html'">Veículos - Qualidade / CI</button>
-
+<button class="botao" onclick="trocarUsuario()">Trocar usuário</button>
 <button class="botao" onclick="finalizarTurno()">Finalizar turno</button>
 </div>
 <div class="usuario" id="usuarioExibido"></div>
@@ -422,6 +422,39 @@ async function exportarPlanilhaFinal(dadosChassi, dadosComissao, dadosQualidade,
   }
 }
 </script>
+
+
+
+
+<script>
+function trocarUsuario(){
+  if (typeof showConfirmModal === 'function'){
+    showConfirmModal({
+      title: 'Trocar usuário',
+      message: `Deseja trocar de usuário sem finalizar o turno?
+
+Se escolher "Sim", os dados atuais serão mantidos.`,
+      onYes: function(){ location.href = 'index.html'; },
+      onNo: function(){
+        if (typeof showAppModal === 'function'){
+          showAppModal({title:'Operação cancelada', message:'Dados preservados. Permanecendo no menu.'});
+        } else {
+          alert('Operação cancelada, dados preservados.');
+        }
+      }
+    });
+  } else {
+    var manter = confirm('Deseja trocar de usuário mantendo os dados atuais?');
+    if (manter){
+      location.href = 'index.html';
+    } else {
+      alert('Operação cancelada, dados preservados.');
+    }
+  }
+}
+</script>
+
+
 
 </body>
 </html>
